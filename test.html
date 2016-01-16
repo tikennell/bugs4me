@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+ <title>Ajax Search Box using PHP and MySQL</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+     <script src="http://dev.bugs4.me/js/typeahead.jquery.js"></script>
+
+    </head>
+    <body>
+     <input type="text" name="typeahead" class="typeahead" autofocus autocomplete="off">
+          <script>
+    $(document).ready(function(){
+		$('input.typeahead').typeahead({
+			name: 'typeahead',
+			remote: 'http://dev.bugs4.me/auto-complete.php?query=%QUERY'
+		});
+	});
+    </script>
+    </body>
+</html>

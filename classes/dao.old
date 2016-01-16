@@ -1,0 +1,133 @@
+<?php
+// Check whether the user is logged in or send them back to the main menu.
+#$pathToRoot = str_repeat('../' , substr_count( pathinfo($_SERVER['SCRIPT_NAME'], PATHINFO_DIRNAME) , '/')-1);
+$pathToRoot = str_repeat('../' , substr_count( $_SERVER['SCRIPT_NAME'] , '/') - 1);
+
+require_once($pathToRoot . "login/config/config.php");
+
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
+
+class DAO { 
+
+    protected $db_connection = null;
+    
+    public function __construct()
+    {
+        // create/read session
+        session_start();
+    }
+
+    public function dbConnection()
+    {
+        // if connection already exists
+        if ($this->db_connection != null) {
+            return true;
+        } else {
+            try {
+                $this->db_connection = new PDO(DB_TYPE . ':host='. DB_HOST .';dbname='. DB_APP_NAME, DB_APP_USER, DB_APP_PASS);
+                $this->db_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                //Disable emulated prepares (the MySQL driver has a bug/feature that will make it quote numeric arguments).
+                $this->db_connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
+                return true;
+            } catch (PDOException $e) {
+                $this->errors[] = MESSAGE_DATABASE_ERROR . $e->getMessage();
+                echo $e->getMessage();
+            }
+        }
+        // default return
+        return false;
+    }
+
+    public function dbDisconnect()
+    {
+      if($this->db_connection != NULL)
+      {
+        $this->db_connection = NULL;
+        return true;
+      }
+    }
+}
+
+class MethodOfCapture extends DAO {
+
+    public function __construct()
+    {
+        // Open database connection.
+        $this->dbConnection();
+    }
+
+    public function getMethodOfCapture($methodOfCaptureId)
+    {
+        // Check to see if the method of capture is already in the table.
+        $query = "SELECT * FROM MethodOfCapture
+                     WHERE methodofcaptureid = :methodOfCaptureId;";
+        $stmtGetMOC = $this->db_connection->prepare($query);
+        $stmtGetMOC->bindParam(':methodOfCaptureId', $methodOfCaptureId);
+        $stmtGetMOC->execute();
+
+        // Verify whether the method of capture is already entered.  If not, then create a new method of capture.
+        return $stmtGetMOC->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public function getAllMethodOfCapture($startRow, $numOfRows)
+    {
+        $query = "SELECT * FROM MethodOfCapture LIMIT :startRow, :numOfRows;";
+        $stmtGetAllMOC = $this->db_connection->prepare($query);
+        $stmtGetAllMOC->bindParam(':startRow', $startRow, PDO::PARAM_INT);
+        $stmtGetAllMOC->bindParam(':numOfRows', $numOfRows, PDO::PARAM_INT);
+        $stmtGetAllMOC->execute();
+        return $stmtGetAllMOC->fetchAll(PDO::FETCH_OBJ);
+    }
+    
+    // Change to CountMethodOfCapture()
+    public function getMOCCount()
+    {
+        $query = "SELECT COUNT(*) AS recCount FROM MethodOfCapture;";
+        $stmtMOCCount = $this->db_connection->prepare($query);
+        $stmtMOCCount->execute();
+        $result = $stmtMOCCount->fetchObject();
+        return $result->recCount;
+    }
+    
+    public function addMethodOfCapture($addMethodOfCapture)
+    {
+        // Check to see if the method of capture is already in the table.
+        $query = "SELECT COUNT(*) AS recCount 
+                     FROM MethodOfCapture
+                     WHERE methodofcapture = TRIM(BOTH ' ' FROM :methodofcapture);";
+        $stmtSaveMOC = $this->db_connection->prepare($query);
+        $stmtSaveMOC->bindParam(':methodofcapture', $addMethodOfCapture);
+        $stmtSaveMOC->execute();
+
+        // Verify whether the method of capture is already entered.  If not, then create a new method of capture.
+        $result = $stmtSaveMOC->fetchObject();
+        if ($result->recCount == 0) {
+            $query = "INSERT INTO MethodOfCapture (methodofcapture) VALUES (TRIM(BOTH ' ' FROM :methodofcapture));";
+            $stmtSaveMOC = $this->db_connection->prepare($query);
+            $stmtSaveMOC->bindParam(':methodofcapture', $addMethodOfCapture, PDO::PARAM_STR);
+            $stmtSaveMOC->execute();
+        }
+    }
+    
+    public function deleteMethodOfCapture($methodOfCaptureId = NULL)
+    {
+        $query = "DELETE FROM MethodOfCapture
+                      WHERE methodofcaptureid = :methodOfCaptureId;";
+        $stmtDeleteMOC = $this->db_connection->prepare($query);
+        $stmtDeleteMOC->bindParam(':methodOfCaptureId', $methodOfCaptureId);
+        $stmtDeleteMOC->execute();
+    }
+    
+    // Change edit to set
+    public function editMethodOfCapture($methodOfCaptureId = NULL)
+    {
+        $query = "UPDATE MethodOfCapture SET
+                    methodofcapture = '" . $_GET["editMethodOfCapture"] . 
+                 "' WHERE methodofcaptureid = :methodOfCaptureId;";
+        $stmtDeleteMOC = $this->db_connection->prepare($query);
+        $stmtDeleteMOC->bindParam(':methodOfCaptureId', $methodOfCaptureId);
+        $stmtDeleteMOC->execute();
+    }
+}
+?> 

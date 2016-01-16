@@ -1,0 +1,83 @@
+var MIN_LENGTH = 1;
+
+$( document ).ready(function() {
+
+  $("#autoComplete").keyup(function() {
+    var isAutoComplete = $("#autoComplete").val();
+    if (isAutoComplete.length >= MIN_LENGTH) {
+      $.ajax({
+        method: 'GET',
+        url: 'http://dev.bugs4.me/auto-complete.php',
+        data: {autoComplete: isAutoComplete}
+      })
+      .done(function(data) {
+         $('#personName').html('');
+         var personName = jQuery.parseJSON(data);
+         $(personName).each(function(key, value) {
+//           $('#personName').append('<div class="item">' + value.Name + '</div>');
+           $('#personName').append('<li class="list-group-item">' + value.Name + '</li>');
+         });
+         $('.list-group-item').click(function() {
+            var text = $(this).html();
+            $('#autoComplete').val(text);
+         });
+//         $('.item').click(function() {
+//            var text = $(this).html();
+//            $('#autoComplete').val(text);
+//         });
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {
+         alert(textStatus + " " + errorThrown);
+      })
+      .always(function(data) {
+//         alert(data);
+      });
+    } else {
+      $('#personName').html('');
+    }
+  });
+  $("#autoComplete").blur(function(){
+    $("#personName").fadeOut(500);
+  })
+  $("#autoComplete").focus(function() {
+  alert("here");
+    $("#personName").show();
+  });
+
+});
+
+function getPersonNames () {
+  var isAutoComplete = $("#autoComplete").val();
+  if (isAutoComplete.length >= MIN_LENGTH) {
+    $.ajax({
+      method: 'GET',
+      url: 'http://dev.bugs4.me/auto-complete.php',
+      data: {autoComplete: isAutoComplete}
+    })
+    .done(function(data) {
+       $('#personName').html('');
+       var personName = jQuery.parseJSON(data);
+       $(personName).each(function(key, value) {
+           $('#personName').append('<div class="item">' + value.Name + '</div>');
+         $('#personName').append('<li class="list-group-item">' + value.Name + '</li>');
+       });
+       $('.list-group-item').click(function() {
+          var text = $(this).html();
+          $('#autoComplete').val(text);
+       });
+         $('.item').click(function() {
+            var text = $(this).html();
+            $('#autoComplete').val(text);
+         });
+    })
+    .fail(function(jqXHR, textStatus, errorThrown) {
+       alert(textStatus + " " + errorThrown);
+    })
+    .always(function(data) {
+         alert(data);
+    });
+  } else {
+    $('#personName').html('');
+  }
+});
+}

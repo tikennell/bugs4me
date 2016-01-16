@@ -1,0 +1,50 @@
+var MIN_LENGTH = 1;
+
+$( document ).ready(function() {
+
+  $("#autoComplete").keyup(function() {
+    var isAutoComplete = $("#autoComplete").val();
+    if (isAutoComplete.length >= MIN_LENGTH) {
+      $.get( "/auto-complete.php", 'autoComplete: ' + isAutoComplete )
+//        $.ajax({
+//          method: "GET",
+//          url: "auto-complete.php",
+//          data: "autoComplete=" + isAutoComplete,
+//          dataType: "html"
+//          async: false
+//        })
+        .done(function( data ) {
+//          $('#results').html('');
+//          var results = data;
+//          var results = jQuery.parseJSON(data);
+//          alert(results);
+//          $(results).each(function(key, value) {
+//            $('#results').append('<div class="item">' + value.Name + '</div>');
+alert("in done");
+          })
+
+          $('.item').click(function() {
+            var text = $(this).html();
+            $('#autoComplete').val(text);
+          })
+
+//        })
+        .fail(function( jqXHR, textStatus, errorThrown){
+          alert(textStatus + " " + errorThrown);
+        })
+        .always(function() {
+          alert( "finished" );
+        });
+    } else {
+      $('#results').html('');
+    }
+
+  });
+  $("#autoComplete").blur(function(){
+    $("#results").fadeOut(500);
+  })
+  .focus(function() {
+    $("#results").show();
+  });
+
+});
